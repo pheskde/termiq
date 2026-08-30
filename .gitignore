@@ -1,0 +1,12 @@
+# Build-Ergebnisse
+/dist/
+*.exe
+
+# Laufzeitdateien — enthalten Zugangsdaten bzw. Postfach-Metadaten
+termiq.json
+termiq-journal.json
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/

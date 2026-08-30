@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TermiQ — Einrichtung</title>
+<style>
+  :root{
+    --bg:#f5f7f7; --card:#fff; --ink:#17211f; --muted:#5d6b68;
+    --line:#dfe6e4; --brand:#178274; --brand-2:#3fb8a8; --danger:#b3261e;
+    --radius:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#161a19; --card:#1e2422; --ink:#e8efed; --muted:#9aa8a5;
+           --line:#2c3533; --brand:#3fb8a8; --brand-2:#178274; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  header{background:var(--brand);color:#fff;padding:18px 24px}
+  header h1{margin:0;font-size:19px;font-weight:600}
+  header p{margin:4px 0 0;font-size:13px;opacity:.85}
+  main{max-width:840px;margin:0 auto;padding:24px 16px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+        padding:20px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:16px}
+  .card .hint{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+  input[type=text],input[type=password],input[type=number],select{
+    width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;
+    background:var(--bg);color:var(--ink);font-size:14px}
+  input:focus,select:focus{outline:2px solid var(--brand-2);outline-offset:-1px}
+  .row{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px}
+  .row input[type=checkbox]{width:16px;height:16px;accent-color:var(--brand)}
+  .actions{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+  button{font:inherit;padding:8px 16px;border-radius:7px;border:1px solid transparent;cursor:pointer}
+  .primary{background:var(--brand);color:#fff}
+  .primary:hover{filter:brightness(1.08)}
+  .secondary{background:transparent;color:var(--ink);border-color:var(--line)}
+  .secondary:hover{border-color:var(--brand)}
+  .status{font-size:13px}
+  .ok{color:var(--brand)} .bad{color:var(--danger)}
+  pre{background:var(--bg);border:1px solid var(--line);border-radius:7px;
+      padding:12px;overflow-x:auto;font-size:12.5px;max-height:340px}
+  .bar{position:sticky;bottom:0;background:var(--card);border-top:1px solid var(--line);
+       padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:flex-end}
+  .path{font-size:12px;color:var(--muted);margin-right:auto;word-break:break-all}
+</style>
+</head>
+<body>
+<header>
+  <h1>TermiQ — Einrichtung</h1>
+  <p>Postfach, Kalender und Modell verbinden. Alles bleibt auf diesem Rechner.</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Postfach</h2>
+    <p class="hint">IMAP über SSL. Bei den meisten Anbietern ist Port 993 richtig.</p>
+    <div class="grid">
+      <div><label>Server</label><input type="text" id="imap_host" placeholder="imap.example.de"></div>
+      <div><label>Port</label><input type="number" id="imap_port" value="993"></div>
+      <div><label>Benutzer</label><input type="text" id="imap_user"></div>
+      <div><label>Passwort</label><input type="password" id="imap_password"></div>
+      <div><label>Ordner</label><select id="imap_folder"><option value="INBOX">INBOX</option></select></div>
+      <div><label>Nach Eintrag verschieben nach (optional)</label>
+           <select id="imap_archive"><option value="">— nicht verschieben —</option></select></div>
+    </div>
+    <div class="row"><input type="checkbox" id="imap_seen"><label for="imap_seen" style="margin:0">Bearbeitete Mails als gelesen markieren</label></div>
+    <div class="actions">
+      <button class="secondary" onclick="testIMAP()">Verbindung testen</button>
+      <span class="status" id="imap_status"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Kalender</h2>
+    <p class="hint">CalDAV-Adresse, zum Beispiel <code>https://sogo.example.de/SOGo/dav/</code>.</p>
+    <div class="grid">
+      <div><label>Adresse</label><input type="text" id="dav_url" placeholder="https://…/dav/"></div>
+      <div><label>Zielkalender</label><select id="dav_calendar"><option value="">— erst testen —</option></select></div>
+      <div><label>Benutzer</label><input type="text" id="dav_user"></div>
+      <div><label>Passwort</label><input type="password" id="dav_password"></div>
+    </div>
+    <div class="row"><input type="checkbox" id="dav_skip"><label for="dav_skip" style="margin:0">Zertifikat nicht prüfen (nur für selbstsignierte Server)</label></div>
+    <div class="actions">
+      <button class="secondary" onclick="testCalDAV()">Kalender laden</button>
+      <span class="status" id="dav_status"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Sprachmodell</h2>
+    <p class="hint">Jeder OpenAI-kompatible Endpunkt — auch ein eigener Server im Haus.</p>
+    <div class="grid">
+      <div><label>Adresse</label><input type="text" id="llm_url" placeholder="https://api.openai.com/v1"></div>
+      <div><label>Modell</label><input type="text" id="llm_model" placeholder="gpt-4o-mini"></div>
+      <div style="grid-column:1/-1"><label>API-Key</label><input type="password" id="llm_key"></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" onclick="testLLM()">Modell testen</button>
+      <span class="status" id="llm_status"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Verhalten</h2>
+    <p class="hint">Die Voreinstellungen sind bewusst vorsichtig gewählt.</p>
+    <div class="grid">
+      <div><label>Zeitzone</label><input type="text" id="b_tz" value="Europe/Berlin"></div>
+      <div><label>Mails pro Lauf</label><input type="number" id="b_max" value="10"></div>
+      <div><label>Nur Mails der letzten … Tage ansehen</label><input type="number" id="b_lookback" value="7"></div>
+      <div><label>Keine Termine aus Mails älter als … Tage</label><input type="number" id="b_age" value="14"></div>
+      <div><label>Mindest-Sicherheit (0–1)</label><input type="text" id="b_conf" value="0.6"></div>
+    </div>
+    <div class="row"><input type="checkbox" id="b_unseen" checked><label for="b_unseen" style="margin:0">Nur ungelesene Mails</label></div>
+    <div class="row"><input type="checkbox" id="b_promo" checked><label for="b_promo" style="margin:0">Werbung und Newsletter überspringen</label></div>
+  </div>
+
+  <div class="card">
+    <h2>Probelauf</h2>
+    <p class="hint">Liest das Postfach und zeigt, welche Termine entstehen würden. Es wird nichts eingetragen und nichts verschoben.</p>
+    <div class="actions">
+      <button class="secondary" onclick="dryRun()">Probelauf starten</button>
+      <span class="status" id="dry_status"></span>
+    </div>
+    <pre id="dry_log" hidden></pre>
+  </div>
+</main>
+
+<div class="bar">
+  <span class="path" id="cfgpath"></span>
+  <span class="status" id="save_status"></span>
+  <button class="primary" onclick="save()">Speichern</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const val = id => $(id).value.trim();
+const num = (id,d) => { const n = parseFloat($(id).value); return isNaN(n) ? d : n; };
+
+function collect(){
+  return {
+    imap:{host:val('imap_host'), port:num('imap_port',993), user:val('imap_user'),
+          password:$('imap_password').value, folder:val('imap_folder')||'INBOX',
+          archive_folder:val('imap_archive'), mark_seen:$('imap_seen').checked},
+    caldav:{url:val('dav_url'), user:val('dav_user'), password:$('dav_password').value,
+            calendar_path:val('dav_calendar'),
+            calendar_name:$('dav_calendar').selectedOptions[0]?.textContent||'',
+            skip_verify:$('dav_skip').checked},
+    llm:{base_url:val('llm_url')||'https://api.openai.com/v1', api_key:$('llm_key').value,
+         model:val('llm_model')||'gpt-4o-mini'},
+    behavior:{timezone:val('b_tz')||'Europe/Berlin', max_mails_per_run:num('b_max',10),
+              max_age_days:num('b_age',14), min_confidence:num('b_conf',0.6),
+              skip_promotional:$('b_promo').checked, lookback_days:num('b_lookback',7),
+              unseen_only:$('b_unseen').checked}
+  };
+}
+
+function apply(c){
+  $('imap_host').value=c.imap.host||''; $('imap_port').value=c.imap.port||993;
+  $('imap_user').value=c.imap.user||''; $('imap_password').value=c.imap.password||'';
+  $('imap_seen').checked=!!c.imap.mark_seen;
+  setOption('imap_folder', c.imap.folder||'INBOX');
+  setOption('imap_archive', c.imap.archive_folder||'');
+  $('dav_url').value=c.caldav.url||''; $('dav_user').value=c.caldav.user||'';
+  $('dav_password').value=c.caldav.password||''; $('dav_skip').checked=!!c.caldav.skip_verify;
+  if(c.caldav.calendar_path) setOption('dav_calendar', c.caldav.calendar_path, c.caldav.calendar_name);
+  $('llm_url').value=c.llm.base_url||''; $('llm_model').value=c.llm.model||'';
+  $('llm_key').value=c.llm.api_key||'';
+  const b=c.behavior||{};
+  $('b_tz').value=b.timezone||'Europe/Berlin'; $('b_max').value=b.max_mails_per_run??10;
+  $('b_age').value=b.max_age_days??14; $('b_conf').value=b.min_confidence??0.6;
+  $('b_lookback').value=b.lookback_days??7;
+  $('b_promo').checked=b.skip_promotional!==false; $('b_unseen').checked=b.unseen_only!==false;
+}
+
+function setOption(sel,value,label){
+  const s=$(sel);
+  if(![...s.options].some(o=>o.value===value)){
+    s.add(new Option(label||value||'— nicht verschieben —', value));
+  }
+  s.value=value;
+}
+
+function status(id, ok, msg){
+  const el=$(id); el.textContent=msg; el.className='status '+(ok?'ok':'bad');
+}
+
+async function post(path, body){
+  const r = await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},
+                             body:JSON.stringify(body)});
+  return r.json();
+}
+
+async function testIMAP(){
+  status('imap_status', true, 'verbinde …');
+  const c = collect().imap;
+  const r = await post('/api/test/imap', c);
+  if(!r.ok){ status('imap_status', false, r.error); return; }
+  const keep = $('imap_folder').value, keepA = $('imap_archive').value;
+  $('imap_folder').innerHTML=''; $('imap_archive').innerHTML='';
+  $('imap_archive').add(new Option('— nicht verschieben —',''));
+  r.folders.forEach(f=>{ $('imap_folder').add(new Option(f,f)); $('imap_archive').add(new Option(f,f)); });
+  setOption('imap_folder', keep||'INBOX'); setOption('imap_archive', keepA||'');
+  status('imap_status', true, r.folders.length+' Ordner gefunden');
+}
+
+async function testCalDAV(){
+  status('dav_status', true, 'verbinde …');
+  const r = await post('/api/test/caldav', collect().caldav);
+  if(!r.ok){ status('dav_status', false, r.error); return; }
+  const keep = $('dav_calendar').value;
+  $('dav_calendar').innerHTML='';
+  (r.calendars||[]).forEach(c=> $('dav_calendar').add(new Option(c.Name, c.Path)));
+  if(keep) setOption('dav_calendar', keep);
+  status('dav_status', true, (r.calendars||[]).length+' Kalender gefunden');
+}
+
+async function testLLM(){
+  status('llm_status', true, 'frage an …');
+  const r = await post('/api/test/llm', collect().llm);
+  status('llm_status', r.ok, r.ok ? 'Modell antwortet' : r.error);
+}
+
+async function save(){
+  const r = await post('/api/config', collect());
+  status('save_status', r.ok, r.ok ? 'gespeichert' : r.error);
+  setTimeout(()=>{ $('save_status').textContent=''; }, 4000);
+}
+
+async function dryRun(){
+  status('dry_status', true, 'läuft — das kann eine Minute dauern …');
+  $('dry_log').hidden = true;
+  const r = await post('/api/dryrun', collect());
+  const log = (r.log||[]).join('\n') || '(keine Ausgabe)';
+  $('dry_log').textContent = log; $('dry_log').hidden = false;
+  if(!r.ok){ status('dry_status', false, r.error); return; }
+  const s = r.summary||{};
+  status('dry_status', true, `geprüft: ${s.Examined||0}, Termine: ${s.EventsMade||0}`);
+}
+
+fetch('/api/config').then(r=>r.json()).then(d=>{ apply(d.config); $('cfgpath').textContent=d.path; });
+</script>
+</body>
+</html>
